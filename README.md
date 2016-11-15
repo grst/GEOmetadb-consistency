@@ -7,4 +7,4 @@ a relational database containing meta information from the [Gene Expression Omni
 For one of my projects, I was loading the data into a postgreSQL server and decided to add foreign key constraints 
 in order to ensure consistency of the data. Intrestingly, this failed for some relations, due to the fact that the data from GEOmetadb is not consistent. 
 
-In [`geometadb_consistency.Rmd`](geometadb_consistency.html), I check for these inconsistencies systematically. Also, I acknowledge, that the inconsistencies are not necessarily the fault of the authors of GEOmetadb, but can be an immanent property of the messy data on GEO. 
+In [`geometadb_consistency.Rmd`](geometadb_consistency.md), I check for these inconsistencies systematically. Also, I acknowledge, that the inconsistencies are not necessarily the fault of the authors of GEOmetadb, but can be an immanent property of the messy data on GEO. 
