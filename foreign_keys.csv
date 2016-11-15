@@ -1,0 +1,10 @@
+table;col;ref_table;ref_col
+gse_gpl;gse;gse;gse
+gse_gpl;gpl;gpl;gpl
+gse_gsm;gse;gse;gse
+gse_gsm;gsm;gsm;gsm
+gsm;gpl;gpl;gpl
+gsm;gsm;gse_gsm;gsm
+sMatrix;gpl;gpl;gpl
+sMatrix;gse;gse;gse
+gds;gpl;gpl;gpl

@@ -1,0 +1,55 @@
+---
+title: "Checking GEOmetadb for consistency"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(RSQLite)
+library(knitr)
+library(GEOmetadb)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[GEOmetadb](https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html) is
+a relational database containing meta information from the [Gene Expression Omnibus (GEO)](https://www.ncbi.nlm.nih.gov/geo/). The database is provided as SQLite database and is a wonderful ressource for mining GEO for studies that are relevant for a certain project. 
+
+For one of my projects, I was loading the data into a postgreSQL server and decided to add foreign key constraints 
+in order to ensure consistency of the data. Intrestingly, this failed for some relations, due to the fact that the data from GEOmetadb is not consistent. 
+
+In this document, I check for these inconsistencies systematically. Also, I acknowledge, that the inconsistencies are not necessarily the fault of the authors of GEOmetadb, but can be an immanent property of the messy data on GEO. 
+
+First, we establish a connection to the SQLite database. 
+```{r geometadb_init}
+gdb = dbConnect(SQLite(), "GEOmetadb.sqlite")
+kable(dbGetQuery(gdb, "select * from metainfo"))
+```
+
+We define an SQL query, that will return all rows that violate the foreign key constraint. Namely all rows in a table, where the corresponding entry from the reference table does not exist. 
+```{r fdef}
+testForeignKey = function(table, col, ref_table, ref_col) {
+  query = sprintf("select distinct %s
+                       from %s
+                       where not exists (
+                           select * from %s
+                           where %s.%s = %s.%s);", col, table, ref_table, table, col, ref_table, ref_col)
+  res = dbGetQuery(gdb, query)
+  return(nrow(res))
+}
+```
+
+We created a list of foreign keys in a csv file: 
+```{r fks, echo=FALSE}
+fks = read.csv2("foreign_keys.csv")
+colnames(fks) = c("table", "column", "references table", "on column")
+kable(fks)
+```
+
+Now, we apply the test function to each of the foreign keys:
+```{r}
+diff = apply(fks, 1, function(vec) {testForeignKey(vec[1], vec[2], vec[3], vec[4])})
+tab = cbind(fks, diff)
+colnames(tab) = c(colnames(fks), "offending lines")
+kable(tab)
+```
+
+In particular, the `gsm` table does not contain all entries that are referenced in `gse_gsm` and not all entries from `gsm` have a `gse` associated. The latter could be the case if there were *Samples* in GEO, that are not part of any *Series*. 
