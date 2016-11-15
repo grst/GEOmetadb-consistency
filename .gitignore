@@ -1,4 +1,5 @@
 GEOmetadb.sqlite
+*.html
 
 # History files
 .Rhistory
